@@ -1,0 +1,49 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+}
+
+/* Slack-style button */
+.slack-button {
+  background: linear-gradient(135deg, #4A154B 0%, #611f69 100%);
+  transition: all 0.3s ease;
+}
+
+.slack-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(74, 21, 75, 0.3);
+}
+
+/* Message card animations */
+.message-card {
+  transition: all 0.2s ease;
+}
+
+.message-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Channel list item */
+.channel-item {
+  transition: all 0.2s ease;
+}
+
+.channel-item:hover {
+  background-color: #f3f4f6;
+  transform: translateX(4px);
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
