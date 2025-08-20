@@ -4,14 +4,17 @@ services:
     env: node
     plan: starter
     # Paid starter plan - always on, no sleeping
-    buildCommand: npm run render-build
-    startCommand: ./render-start.sh
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: node server.js
     # Production optimizations for paid plan
     healthCheckPath: /health
     autoDeploy: true
     
     # Environment variables
     envVars:
+      # Application Configuration
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -20,12 +23,16 @@ services:
         value: actdienasty.slack.com
       - key: SESSION_SECRET
         generateValue: true
+      
+      # Security Settings
       - key: COOKIE_SECURE
         value: true
       - key: COOKIE_SAMESITE
         value: none
       - key: COOKIE_HTTPONLY
         value: true
+      
+      # Performance Settings
       - key: MAX_REQUEST_SIZE
         value: 10mb
       - key: SESSION_TIMEOUT
