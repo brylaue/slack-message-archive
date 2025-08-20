@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: slack-message-viewer
+    env: node
+    plan: starter
+    buildCommand: npm run render-build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SLACK_WORKSPACE
+        value: actdienasty.slack.com
+    secrets:
+      - key: SLACK_CLIENT_ID
+        sync: false
+      - key: SLACK_CLIENT_SECRET
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_USER_TOKEN
+        sync: false
+    healthCheckPath: /api/auth/status
+    autoDeploy: true

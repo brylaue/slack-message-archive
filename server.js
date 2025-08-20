@@ -2,15 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const helmet = require('helmet');
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.FRONTEND_URL || 'https://slack-message-viewer.onrender.com'] 
+    : ['http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
@@ -19,7 +22,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 }));
 
 // Slack API routes
@@ -174,7 +180,19 @@ app.get('/api/user/:userId', async (req, res) => {
 app.get('/api/auth/status', (req, res) => {
   res.json({ 
     authenticated: !!req.session.slackAccessToken,
-    userId: req.session.slackUserId 
+    userId: req.session.slackUserId,
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    service: 'slack-message-viewer',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
