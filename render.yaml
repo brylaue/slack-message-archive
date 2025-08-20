@@ -3,17 +3,39 @@ services:
     name: slack-message-viewer
     env: node
     plan: starter
+    # Paid starter plan - always on, no sleeping
     buildCommand: npm run render-build
-    startCommand: npm start
+    startCommand: ./render-start.sh
+    # Production optimizations for paid plan
+    healthCheckPath: /health
+    autoDeploy: true
+    
+    # Environment variables
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-      - key: SESSION_SECRET
-        generateValue: true
       - key: SLACK_WORKSPACE
         value: actdienasty.slack.com
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: true
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: COOKIE_HTTPONLY
+        value: true
+      - key: MAX_REQUEST_SIZE
+        value: 10mb
+      - key: SESSION_TIMEOUT
+        value: 86400000
+      - key: LOG_LEVEL
+        value: info
+      - key: ENABLE_DEBUG_LOGGING
+        value: false
+    
+    # Slack API secrets (set these in Render dashboard)
     secrets:
       - key: SLACK_CLIENT_ID
         sync: false
@@ -25,5 +47,3 @@ services:
         sync: false
       - key: SLACK_USER_TOKEN
         sync: false
-    healthCheckPath: /api/auth/status
-    autoDeploy: true
