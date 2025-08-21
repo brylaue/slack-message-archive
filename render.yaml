@@ -12,9 +12,14 @@ services:
     
     # Environment variables
     envVars:
-      # Application Configuration
+      # NPM Configuration
+      - key: NPM_CONFIG_PREFER_OFFLINE
+        value: true
+      - key: NPM_CONFIG_CACHE
+        value: /opt/render/project/.npm
       - key: NODE_ENV
         value: production
+      # Application Configuration
       - key: PORT
         value: 10000
       - key: SLACK_WORKSPACE
