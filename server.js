@@ -241,18 +241,28 @@ if (process.env.NODE_ENV === 'production') {
   
   // Check if build directory exists
   if (require('fs').existsSync(buildPath)) {
+    console.log('✅ Build directory found:', buildPath);
     app.use(express.static(buildPath));
     
     app.get('*', (req, res) => {
       res.sendFile(path.join(buildPath, 'index.html'));
     });
   } else {
+    console.log('❌ Build directory not found:', buildPath);
+    console.log('📁 Current directory contents:', require('fs').readdirSync(__dirname));
+    
     // Fallback if build doesn't exist
     app.get('/', (req, res) => {
       res.json({ 
         message: 'Slack Message Viewer API',
         status: 'running',
-        build: 'not found - check build process'
+        build: 'not found - check build process',
+        debug: {
+          currentDir: __dirname,
+          buildPath: buildPath,
+          exists: require('fs').existsSync(buildPath),
+          contents: require('fs').readdirSync(__dirname)
+        }
       });
     });
   }
