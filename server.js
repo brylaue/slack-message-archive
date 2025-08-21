@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const helmet = require('helmet');
 const fetch = require('node-fetch');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -36,7 +38,18 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Create sessions directory if it doesn't exist
+const sessionsDir = path.join(__dirname, 'sessions');
+if (!fs.existsSync(sessionsDir)) {
+  fs.mkdirSync(sessionsDir, { recursive: true });
+}
+
 app.use(session({
+  store: new FileStore({
+    path: sessionsDir,
+    ttl: 86400, // 24 hours
+    reapInterval: 3600 // 1 hour
+  }),
   secret: process.env.SESSION_SECRET || 'fallback-secret',
   resave: false,
   saveUninitialized: false,
@@ -224,11 +237,25 @@ app.post('/api/auth/logout', (req, res) => {
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
-  app.use(express.static('client/build'));
+  const buildPath = path.join(__dirname, 'client', 'build');
   
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
-  });
+  // Check if build directory exists
+  if (require('fs').existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(buildPath, 'index.html'));
+    });
+  } else {
+    // Fallback if build doesn't exist
+    app.get('/', (req, res) => {
+      res.json({ 
+        message: 'Slack Message Viewer API',
+        status: 'running',
+        build: 'not found - check build process'
+      });
+    });
+  }
 }
 
 // Error handling middleware
