@@ -11,6 +11,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "cd client && npm run build",
+    "test": "jest --coverage",
     "install-client": "cd client && npm install",
     "install-server": "npm install",
     "install-all": "npm run install-server && npm run install-client",
@@ -35,7 +36,18 @@
     "pm2": "^5.3.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4",
     "nodemon": "^3.0.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "<rootDir>/client/"
+    ],
+    "collectCoverageFrom": [
+      "server.js"
+    ]
   },
   "keywords": ["slack", "messages", "history", "web-app"],
   "author": "Your Name",
