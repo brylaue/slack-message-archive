@@ -12,6 +12,8 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 // Middleware
+// Enable trusting proxy headers so req.protocol is accurate on Render/Heroku
+app.set('trust proxy', 1);
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -63,7 +65,19 @@ app.use(session({
 
 // Slack API routes
 app.get('/api/auth/slack', (req, res) => {
-  const slackAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=channels:history,channels:read,groups:history,groups:read,im:history,im:read,mpim:history,mpim:read,users:read&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/slack/callback`)}`;
+  const clientId = process.env.SLACK_CLIENT_ID;
+  if (!clientId) {
+    console.error('Slack OAuth error: SLACK_CLIENT_ID is not set');
+    return res.status(500).json({
+      error: 'Slack OAuth is not configured',
+      details: 'Missing SLACK_CLIENT_ID. Set it in your environment.',
+    });
+  }
+
+  const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const redirectUri = `${baseUrl}/api/auth/slack/callback`;
+
+  const slackAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${encodeURIComponent(clientId)}&scope=channels:history,channels:read,groups:history,groups:read,im:history,im:read,mpim:history,mpim:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
   res.json({ authUrl: slackAuthUrl });
 });
 
@@ -76,6 +90,7 @@ app.get('/api/auth/slack/callback', async (req, res) => {
 
   try {
     // Exchange code for access token
+    const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
     const tokenResponse = await fetch('https://slack.com/api/oauth.v2.access', {
       method: 'POST',
       headers: {
@@ -85,7 +100,7 @@ app.get('/api/auth/slack/callback', async (req, res) => {
         client_id: process.env.SLACK_CLIENT_ID,
         client_secret: process.env.SLACK_CLIENT_SECRET,
         code: code,
-        redirect_uri: `${req.protocol}://${req.get('host')}/api/auth/slack/callback`
+        redirect_uri: `${baseUrl}/api/auth/slack/callback`
       })
     });
 
