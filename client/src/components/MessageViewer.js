@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Clock, User, Loader2, ChevronUp, ChevronDown, Hash, Lock } from 'lucide-react';
+import { ArrowLeft, Clock, User, Loader2, ChevronDown, Hash, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const MessageViewer = ({ channel, onBack }) => {
@@ -12,11 +12,7 @@ const MessageViewer = ({ channel, onBack }) => {
   const [error, setError] = useState(null);
   const [userCache, setUserCache] = useState({});
 
-  useEffect(() => {
-    fetchMessages();
-  }, [channel.id]);
-
-  const fetchMessages = async (loadMore = false) => {
+  const fetchMessages = useCallback(async (loadMore = false) => {
     try {
       if (loadMore) {
         setLoadingMore(true);
@@ -47,7 +43,12 @@ const MessageViewer = ({ channel, onBack }) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [channel.id, oldestTimestamp]);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [channel.id, fetchMessages]);
+
 
   const loadMoreMessages = () => {
     if (hasMore && !loadingMore) {
