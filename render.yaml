@@ -4,11 +4,7 @@ services:
     env: node
     plan: starter
     # Paid starter plan - always on, no sleeping
-    buildCommand: |
-      rm -f yarn.lock package-lock.json client/package-lock.json
-      npm install --prefer-offline --no-audit
-      cd client && npm install --prefer-offline --no-audit && npm run build
-      ./verify-build.sh
+    buildCommand: ./render-build.sh
     startCommand: node server.js
     # Production optimizations for paid plan
     healthCheckPath: /health
