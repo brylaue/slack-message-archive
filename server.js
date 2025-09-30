@@ -282,27 +282,35 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`💬 Slack workspace: ${process.env.SLACK_WORKSPACE}`);
-  console.log(`🔒 HTTPS: ${process.env.NODE_ENV === 'production' ? 'Enabled' : 'Disabled'}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-});
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`💬 Slack workspace: ${process.env.SLACK_WORKSPACE}`);
+    console.log(`🔒 HTTPS: ${process.env.NODE_ENV === 'production' ? 'Enabled' : 'Disabled'}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  });
+}
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
-    process.exit(0);
+if (process.env.NODE_ENV !== 'test') {
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('Process terminated');
+      process.exit(0);
+    });
   });
-});
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
-    process.exit(0);
+  process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully');
+    server.close(() => {
+      console.log('Process terminated');
+      process.exit(0);
+    });
   });
-});
+}
+
+// Expose app for testing
+module.exports = app;
