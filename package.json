@@ -4,8 +4,8 @@
   "description": "A web application to view Slack messages older than 90 days",
   "main": "server.js",
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": "20.x",
+    "npm": ">=10.0.0"
   },
   "scripts": {
     "start": "node server.js",
